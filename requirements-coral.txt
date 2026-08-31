@@ -1,0 +1,8 @@
+--extra-index-url https://google-coral.github.io/py-repo/
+
+# Match the Coral runtime/delegate generation used by this project.
+tflite-runtime==2.5.0.post1
+
+# tflite-runtime's metadata permits NumPy 2.x, but this application and its
+# native dependencies are verified with NumPy 1.26.
+numpy==1.26.4

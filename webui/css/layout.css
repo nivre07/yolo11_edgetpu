@@ -1,0 +1,358 @@
+/* No-scroll shell: nothing in this tree ever gets overflow:auto|scroll */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-page-bg);
+  font-family: var(--font-family);
+  color: var(--color-ink);
+  /* Kiosk touchscreen: no pinch/double-tap zoom, no gray tap-flash rectangle,
+     no text-selection callout on long-press outside of actual inputs. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* A one-finger drag over selectable text is exactly what makes a touch
+   browser start a text-selection instead of a scroll — this is the actual
+   cause of inconsistent-feeling touch scrolling, not the drag/resize
+   handles or scroll-container nesting. Nothing in this app is meant to be
+   text-selected (it's a touch kiosk, not a document), except the handful
+   of real editable fields in Settings, which get it back explicitly below. */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+input, textarea, select {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.dashboard-shell {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Nav bar (fixed chrome, NOT a grid item) ---- */
+.navbar {
+  flex: 0 0 auto;
+  height: 40px;
+  background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-soft) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-md);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+.nav-items {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.6vw, 22px);
+  height: 100%;
+  overflow: hidden;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: var(--fs-nav);
+  font-weight: 500;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+.nav-item:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+.nav-item.active { background: rgba(255,255,255,0.2); }
+.nav-item .nav-icon { font-size: 1.05em; line-height: 1; }
+
+/* Start Camera connection light: red the instant it's pressed (or if the
+   backend stops responding while running), green once camera_connected is
+   actually confirmed. Reuses the same status colors as .status-dot. */
+.nav-item.conn-connecting {
+  background: rgba(192,57,43,0.35);
+  box-shadow: inset 0 0 0 1px var(--status-bad);
+}
+.nav-item.conn-connected {
+  background: rgba(5,136,98,0.35);
+  box-shadow: inset 0 0 0 1px var(--status-ok);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 0 0 auto;
+}
+
+.minimize-app-btn, .close-app-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.minimize-app-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.06); }
+.minimize-app-btn:active { transform: scale(0.94); }
+.close-app-btn:hover { background: var(--color-danger-text); transform: scale(1.06); }
+.close-app-btn:active { transform: scale(0.94); }
+
+/* ---- Grid area ---- */
+.grid-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: var(--space-sm);
+}
+
+.grid-stack {
+  height: 100% !important;
+}
+
+.grid-stack-item-content {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-card);
+}
+/* GridStack's own base CSS (.grid-stack>.grid-stack-item>.grid-stack-item-content)
+   sets overflow-y:auto with higher specificity than the rule above, so it wins
+   despite loading first — leaving a second, technically-scrollable ancestor
+   wrapping every panel on top of the real one (.panel-body.scrollable below).
+   Two nested scrollable ancestors is exactly what makes a one-finger touch
+   drag feel inconsistent, since the browser has to disambiguate which one the
+   gesture belongs to. Match GridStack's selector specificity so this override
+   actually wins — there is exactly one scrollable surface per panel. */
+.grid-stack > .grid-stack-item > .grid-stack-item-content {
+  overflow: hidden;
+}
+
+/* ---- Panel card chrome (shared by all panels) ---- */
+.panel-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow var(--transition-med);
+}
+.panel-card:hover { box-shadow: 0 2px 4px rgba(22,48,110,0.09), 0 8px 22px rgba(22,48,110,0.12); }
+
+/* Seamless tiled grid: panels sit flush (GRID_MARGIN=0) with square
+   corners, so the whole grid reads as one surface. Scoped here rather
+   than zeroing --radius-card so the modal keeps its rounded corners. */
+.grid-stack-item-content, .panel-card {
+  border-radius: 0;
+}
+.panel-card:hover {
+  box-shadow: inset 0 0 0 2px var(--color-green);
+}
+
+/* GridStack's straight-edge resize handles (n/s/e/w) have no visible
+   background — only the corner handles do — so widening their invisible
+   hit area is purely a touch-target fix, no visual change. Needed because
+   GRID_MARGIN=0 put them flush against the neighboring panel with zero
+   buffer, making them hard to grab precisely on a touchscreen. */
+.grid-stack-item > .ui-resizable-s,
+.grid-stack-item > .ui-resizable-n {
+  height: 18px;
+}
+.grid-stack-item > .ui-resizable-e,
+.grid-stack-item > .ui-resizable-w {
+  width: 18px;
+}
+/* Touch: without this, a finger-drag on a resize handle or the drag-handle
+   header can be interpreted as a page pan/scroll gesture racing against
+   GridStack's own pointer-based drag logic, making touch drag/resize feel
+   unreliable ("sticky" or dropped). Handing the whole gesture to GridStack
+   removes that race. */
+.grid-stack-item > .ui-resizable-handle {
+  touch-action: none;
+}
+
+.panel-header {
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-soft) 100%);
+  color: #fff;
+  font-size: var(--fs-panel-header);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: var(--space-sm) var(--space-md);
+  cursor: grab;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+.panel-header:active { cursor: grabbing; }
+
+.panel-body {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Any panel body can hold more content than its current size allows —
+   .scrollable is applied wherever that's possible so content scrolls
+   internally instead of being clipped or shrunk to fit. */
+.panel-body.scrollable,
+.detected-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-green) transparent;
+  /* Touch: hand vertical drags to native momentum scrolling and stop a
+     scroll that hits the top/bottom from bleeding into (and rubber-banding)
+     the grid behind it. */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-body.scrollable::-webkit-scrollbar,
+.detected-list::-webkit-scrollbar {
+  width: 6px;
+}
+.panel-body.scrollable::-webkit-scrollbar-track,
+.detected-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-body.scrollable::-webkit-scrollbar-thumb,
+.detected-list::-webkit-scrollbar-thumb {
+  background: var(--color-green);
+  border-radius: 3px;
+}
+
+/* GridStack drag handle scoping */
+.grid-stack-item .panel-drag-handle { cursor: grab; touch-action: none; }
+
+/* Responsive safety net below 900px (neither target resolution triggers this) */
+@media (max-width: 900px) {
+  .nav-item .nav-label { display: none; }
+}
+
+/* ---- Nav detail modal (Settings / Inventory / Recipes / Analytics / History) ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 16, 32, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-panel {
+  width: min(720px, 90vw);
+  height: min(640px, 85vh);
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-soft) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+}
+.modal-title { font-weight: 700; font-size: 1.05rem; }
+.modal-close {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.modal-close:hover { background: rgba(255,255,255,0.25); }
+
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-green) transparent;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-body::-webkit-scrollbar { width: 6px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--color-green); border-radius: 3px; }
+
+/* ---- Save/confirm dialog: separate, higher-stacked overlay so it can sit
+   on top of the Settings modal (z-index 100) when triggered from within it. ---- */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 16, 32, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.dialog-overlay.open { display: flex; }
+.dialog-box {
+  width: min(340px, 85vw);
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  text-align: center;
+}
+.dialog-message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.dialog-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+.dialog-box .btn {
+  min-width: 96px;
+  min-height: 40px;
+}

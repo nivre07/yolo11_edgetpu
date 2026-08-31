@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Food GPT Dashboard</title>
+<link rel="stylesheet" href="vendor/gridstack/gridstack.min.css" />
+<link rel="stylesheet" href="css/fonts.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+<div class="dashboard-shell">
+
+  <header class="navbar">
+    <nav class="nav-items" id="navItems">
+      <button class="nav-item" data-nav="settings"><span class="nav-icon"><img class="icon-img" src="vendor/icons/settings.svg" alt=""></span><span class="nav-label">Settings</span></button>
+      <button class="nav-item" data-nav="start-camera"><span class="nav-icon"><img class="icon-img" src="vendor/icons/camera.svg" alt=""></span><span class="nav-label">Start Camera</span></button>
+      <button class="nav-item" data-nav="inventory"><span class="nav-icon"><img class="icon-img" src="vendor/icons/inventory.svg" alt=""></span><span class="nav-label">Inventory</span></button>
+      <button class="nav-item" data-nav="recipes"><span class="nav-icon"><img class="icon-img" src="vendor/icons/recipes.svg" alt=""></span><span class="nav-label">Recipes</span></button>
+      <button class="nav-item" data-nav="analytics"><span class="nav-icon"><img class="icon-img" src="vendor/icons/analytics.svg" alt=""></span><span class="nav-label">Analytics</span></button>
+      <button class="nav-item" data-nav="history"><span class="nav-icon"><img class="icon-img" src="vendor/icons/history.svg" alt=""></span><span class="nav-label">History</span></button>
+    </nav>
+    <div class="navbar-actions">
+      <button class="minimize-app-btn" id="minimizeAppBtn" title="Minimize the app" aria-label="Minimize the app">—</button>
+      <button class="close-app-btn" id="closeAppBtn" title="Close the app" aria-label="Close the app">✕</button>
+    </div>
+  </header>
+
+  <div class="grid-wrap">
+    <div class="grid-stack" id="dashboardGrid">
+
+      <div class="grid-stack-item" gs-id="camera" gs-x="0" gs-y="0" gs-w="70" gs-h="45" gs-min-w="30" gs-min-h="20">
+        <div class="grid-stack-item-content panel-card">
+          <div class="panel-header panel-drag-handle status-header">
+            <div class="status-list horizontal" id="statusList"></div>
+          </div>
+          <div class="panel-body scrollable">
+            <div class="camera-frame">
+              <img class="camera-feed" id="cameraFeed" alt="camera feed" style="display:none" />
+              <div class="camera-placeholder" id="cameraPlaceholder">Camera not started</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-stack-item" gs-id="detected" gs-x="0" gs-y="45" gs-w="70" gs-h="35" gs-min-w="25" gs-min-h="25">
+        <div class="grid-stack-item-content panel-card">
+          <div class="panel-header panel-drag-handle"><img class="icon-img" src="vendor/icons/detected.svg" alt=""> 2. DETECTED ITEMS</div>
+          <div class="panel-body">
+            <div class="detected-items">
+              <div class="detected-header">
+                <span><span id="detectedCount">0</span> item(s) detected</span>
+                <span class="qty-label">Qty</span>
+              </div>
+              <div class="detected-near-miss" id="detectedNearMiss" style="display:none"></div>
+              <div class="detected-list" id="detectedList"></div>
+            </div>
+          </div>
+          <button class="action-btn" id="saveInventoryBtn">SAVE TO INVENTORY</button>
+        </div>
+      </div>
+
+      <div class="grid-stack-item" gs-id="panel2" gs-x="70" gs-y="0" gs-w="25" gs-h="40" gs-min-w="15" gs-min-h="15">
+        <div class="grid-stack-item-content panel-card">
+          <div class="panel-header panel-drag-handle"><img class="icon-img" src="vendor/icons/inventory.svg" alt=""> 3. REFRIGERATOR INVENTORY</div>
+          <div class="panel-body scrollable" id="inventoryBody"></div>
+        </div>
+      </div>
+
+      <div class="grid-stack-item" gs-id="panel3" gs-x="95" gs-y="0" gs-w="25" gs-h="80" gs-min-w="15" gs-min-h="22">
+        <div class="grid-stack-item-content panel-card">
+          <div class="panel-header panel-drag-handle"><img class="icon-img" src="vendor/icons/recipes.svg" alt=""> 4. AI RECIPE RECOMMENDATIONS</div>
+          <div class="panel-body scrollable">
+            <div class="recipe-list" id="recipeList"></div>
+          </div>
+          <button class="action-btn" id="confirmCookBtn">CONFIRM &amp; START COOKING</button>
+        </div>
+      </div>
+
+      <div class="grid-stack-item" gs-id="panel4" gs-x="70" gs-y="40" gs-w="25" gs-h="40" gs-min-w="15" gs-min-h="15">
+        <div class="grid-stack-item-content panel-card">
+          <div class="panel-header panel-drag-handle"><img class="icon-img" src="vendor/icons/analytics.svg" alt=""> 5. PRE-COOK ANALYTICS PROJECTION</div>
+          <div class="panel-body scrollable" id="analyticsBody"></div>
+        </div>
+      </div>
+
+      <div class="grid-stack-item" gs-id="cookpanel" gs-x="120" gs-y="0" gs-w="25" gs-h="80" gs-min-w="15" gs-min-h="22">
+        <div class="grid-stack-item-content panel-card">
+          <div class="panel-header panel-drag-handle"><img class="icon-img" src="vendor/icons/recipes.svg" alt=""> 6. HOW TO COOK</div>
+          <div class="panel-body scrollable" id="cookBody">
+            <div class="detail-empty">Select a recipe to see cooking instructions.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">Title</span>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog-box">
+      <div class="dialog-message" id="dialogMessage"></div>
+      <div class="dialog-actions">
+        <button class="btn" id="dialogOkBtn">OK</button>
+        <button class="btn secondary" id="dialogNoBtn" style="display:none">No</button>
+        <button class="btn" id="dialogYesBtn" style="display:none">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/gridstack/gridstack-all.js" defer></script>
+<script src="js/drag-scroll.js" defer></script>
+<script src="js/dialog.js" defer></script>
+<script src="js/api.js" defer></script>
+<script src="js/dashboard.js" defer></script>
+<script src="js/modals.js" defer></script>
+</body>
+</html>

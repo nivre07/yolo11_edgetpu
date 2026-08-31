@@ -1,0 +1,25 @@
+# Auto-generated snapshot of .venv (Python 3.13.5), captured 2026-07-30.
+# This env is separate from .venv39 (see requirements.txt) — purpose/usage
+# not documented elsewhere in this repo at time of capture.
+#
+# NOTE on torch: the installed torch==2.12.0 was originally installed from a
+# local wheel file (torch-2.12.0-cp313-cp313-manylinux_2_28_aarch64.whl) that
+# no longer exists anywhere on this machine. That wheel is very likely a
+# Raspberry Pi / aarch64 build that did not come from a plain `pip install
+# torch` (standard PyPI aarch64 wheel availability varies by version). If
+# `pip install torch==2.12.0` below fails or pulls the wrong build, you'll
+# need to track down wherever that original wheel came from.
+torch==2.12.0
+
+certifi==2026.5.20
+charset-normalizer==3.4.7
+edge-tpu-silva==1.0.4
+flatbuffers==20181003210633
+idna==3.17
+numpy==2.4.6
+opencv-python-headless==4.13.0.92
+pillow==12.2.0
+requests==2.34.2
+tflite==2.18.0
+tflite-runtime==2.5.0.post1
+urllib3==2.7.0
