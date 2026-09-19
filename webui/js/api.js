@@ -34,6 +34,7 @@
     getSettings: () => req("GET", "/api/settings"),
     postSettings: (payload) => req("POST", "/api/settings", payload),
     resetSettings: () => req("POST", "/api/settings/reset"),
+    clearDatabase: () => req("POST", "/api/database/clear"),
     getModels: () => req("GET", "/api/models"),
 
     getHistory: (params) => {

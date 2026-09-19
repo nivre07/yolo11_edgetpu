@@ -108,12 +108,14 @@
     const saveBtn = h("button", { class: "btn" }, "Save Settings");
     const saveStateBtn = h("button", { class: "btn", style: "margin-top:var(--space-md)" }, "Save Current State");
     const resetBtn = h("button", { class: "btn secondary", style: "margin-top:var(--space-sm)" }, "Reset to Defaults");
+    const clearDbBtn = h("button", { class: "btn secondary", style: "margin-top:var(--space-md)" }, "Clear Database");
 
     bodyEl.appendChild(h("div", { class: "form-section" }, [sourceRow, fileRow, usbRow, modelRow, confRow]));
     bodyEl.appendChild(browserWrap);
     bodyEl.appendChild(saveBtn);
     bodyEl.appendChild(saveStateBtn);
     bodyEl.appendChild(resetBtn);
+    bodyEl.appendChild(clearDbBtn);
     bodyEl.appendChild(statusMsg);
 
     async function openBrowser(path) {
@@ -211,6 +213,25 @@
         statusMsg.textContent = "Error: " + e.message;
         statusMsg.className = "form-status-msg err";
       }
+    });
+
+    clearDbBtn.addEventListener("click", () => {
+      window.Dialog.confirm(
+        "Clear all inventory, saved recipes, analytics, and history data? Settings and configuration will not be affected. This cannot be undone.",
+        async () => {
+          try {
+            await Api.clearDatabase();
+            statusMsg.textContent = "Inventory, recipes, analytics, and history cleared.";
+            statusMsg.className = "form-status-msg ok";
+            window.Dialog.show("Inventory, recipes, analytics, and history cleared successfully.");
+          } catch (e) {
+            statusMsg.textContent = "Error: " + e.message;
+            statusMsg.className = "form-status-msg err";
+            window.Dialog.show("Could not clear the database: " + e.message);
+          }
+        },
+        { confirmText: "Proceed", cancelText: "Cancel" }
+      );
     });
   }
 

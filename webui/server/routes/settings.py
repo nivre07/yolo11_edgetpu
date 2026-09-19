@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request
 
 import models as model_registry
 import settings_store
+from db import clear_database
 
 bp = Blueprint("settings", __name__)
 
@@ -53,6 +54,12 @@ def post_settings_reset():
         defaults["model"] = model_registry.DEFAULT
     settings_store.save_settings(defaults)
     return jsonify({"ok": True, **defaults})
+
+
+@bp.route("/api/database/clear", methods=["POST"])
+def post_database_clear():
+    deleted = clear_database()
+    return jsonify({"ok": True, "deleted": deleted})
 
 
 @bp.route("/api/models", methods=["GET"])

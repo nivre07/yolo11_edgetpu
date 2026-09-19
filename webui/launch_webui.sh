@@ -24,6 +24,27 @@ mkdir -p "$(dirname "$PID_FILE")"
 # shellcheck disable=SC1090
 source "$VENV/bin/activate"
 
+# Replace any dashboard instance already holding this port. Without this,
+# the new browser can reconnect to an old Flask process (and its old route
+# table) while the newly launched backend repeatedly fails with "address
+# already in use". That makes newly added API actions appear as HTTP 405.
+EXISTING_URL="http://127.0.0.1:$PORT"
+if curl -sf "$EXISTING_URL/" 2>/dev/null | grep -q "Food GPT Dashboard"; then
+    echo "Stopping the existing dashboard on port $PORT ..."
+    curl -sf -X POST "$EXISTING_URL/api/app/close" >/dev/null 2>&1 || true
+    for _ in $(seq 1 50); do
+        if ! curl -sf "$EXISTING_URL/api/status" >/dev/null 2>&1; then
+            break
+        fi
+        sleep 0.1
+    done
+fi
+
+if curl -sf "$EXISTING_URL/api/status" >/dev/null 2>&1; then
+    echo "error: port $PORT is still occupied by another dashboard process" >&2
+    exit 1
+fi
+
 # The Coral USB delegate can hit a fatal, unrecoverable libedgetpu USB
 # error (abort() inside its C++ driver — no Python exception, nothing to
 # catch) on flaky USB link resets, which are a known, root-caused hardware/

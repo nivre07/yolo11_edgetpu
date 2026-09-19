@@ -12,8 +12,10 @@
   const okBtn = document.getElementById("dialogOkBtn");
   const yesBtn = document.getElementById("dialogYesBtn");
   const noBtn = document.getElementById("dialogNoBtn");
+  let confirmCleanup = null;
 
   function close() {
+    if (confirmCleanup) confirmCleanup();
     overlay.classList.remove("open");
   }
 
@@ -25,8 +27,11 @@
     overlay.classList.add("open");
   }
 
-  function confirm(message, onYes) {
+  function confirm(message, onYes, options = {}) {
+    close();
     messageEl.textContent = message;
+    yesBtn.textContent = options.confirmText || "Yes";
+    noBtn.textContent = options.cancelText || "No";
     okBtn.style.display = "none";
     yesBtn.style.display = "";
     noBtn.style.display = "";
@@ -34,17 +39,21 @@
 
     const handleYes = () => {
       cleanup();
-      close();
+      overlay.classList.remove("open");
       onYes && onYes();
     };
     const handleNo = () => {
       cleanup();
-      close();
+      overlay.classList.remove("open");
     };
     function cleanup() {
       yesBtn.removeEventListener("click", handleYes);
       noBtn.removeEventListener("click", handleNo);
+      yesBtn.textContent = "Yes";
+      noBtn.textContent = "No";
+      confirmCleanup = null;
     }
+    confirmCleanup = cleanup;
     yesBtn.addEventListener("click", handleYes);
     noBtn.addEventListener("click", handleNo);
   }

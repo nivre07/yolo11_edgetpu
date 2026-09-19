@@ -85,6 +85,31 @@ def init_db() -> None:
     conn.commit()
 
 
+def clear_database() -> dict[str, int]:
+    """Clear inventory, recipes, analytics, and history records only."""
+    conn = get_conn()
+    tables = (
+        "inventory_snapshots",
+        "inference_frames",
+        "recipe_batches",
+        "history_events",
+        "inventory_items",
+    )
+    deleted = {}
+    with conn:
+        for table in tables:
+            cursor = conn.execute(f"DELETE FROM {table}")
+            deleted[table] = cursor.rowcount
+        # Reset counters only for the tables cleared above.
+        conn.execute(
+            "DELETE FROM sqlite_sequence WHERE name IN ({})".format(
+                ",".join("?" for _ in tables)
+            ),
+            tables,
+        )
+    return deleted
+
+
 def log_event(type_: str, summary: str, payload: dict) -> None:
     import json as _json
     conn = get_conn()
